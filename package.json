@@ -1,0 +1,19 @@
+{
+  "name": "tutor-mcp-widget-build",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build-time only: bundles the widget-src TS/Three.js widget into widget-src/generated/mission-widget.html, which the Python server serves as a static resource. Not needed at server runtime.",
+  "type": "module",
+  "scripts": {
+    "build:widget": "node scripts/build-widget.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.128.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.6.0"
+  }
+}

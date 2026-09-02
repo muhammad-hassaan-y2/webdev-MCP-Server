@@ -1,0 +1,22 @@
+[project]
+name = "tutor-mcp"
+version = "1.0.0"
+description = "Interactive AI-tutor MCP server: AI proposes lessons and hints, deterministic checks decide pass/fail and mastery."
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=2.1.0",
+    "uvicorn>=0.30",
+    "starlette>=1.0",
+    "httpx>=0.27",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+tutor-mcp = "tutor_mcp.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
