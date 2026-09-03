@@ -7,7 +7,7 @@ from ..missions.registry import get_mission
 from ..sandbox.run_python import run_python_tests
 from ..sandbox.physics import check_simulation_answer
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
 GEMINI_URL_TMPL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 SYSTEM_PROMPT = (
@@ -18,6 +18,14 @@ SYSTEM_PROMPT = (
     "sentences) that nudges the student toward the answer without stating it "
     "outright."
 )
+
+
+FALLBACK_MODELS = [
+    os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest"),
+    "gemini-flash-lite-latest",
+    "gemini-pro-latest",
+    "gemini-flash-latest",
+]
 
 
 async def _call_gemini_for_hint(
@@ -41,21 +49,24 @@ async def _call_gemini_for_hint(
         "generationConfig": {"maxOutputTokens": 200},
     }
 
-    try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(
-                GEMINI_URL_TMPL.format(model=GEMINI_MODEL),
-                params={"key": api_key},
-                json=body,
-            )
-        if resp.status_code != 200:
-            return None
-        data = resp.json()
-        parts = data["candidates"][0]["content"]["parts"]
-        text = "".join(p.get("text", "") for p in parts).strip()
-        return text or None
-    except (httpx.HTTPError, KeyError, IndexError, ValueError):
-        return None
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        for model in FALLBACK_MODELS:
+            try:
+                resp = await client.post(
+                    GEMINI_URL_TMPL.format(model=model),
+                    params={"key": api_key},
+                    json=body,
+                )
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                parts = data["candidates"][0]["content"]["parts"]
+                text = "".join(p.get("text", "") for p in parts).strip()
+                if text:
+                    return text
+            except (httpx.HTTPError, KeyError, IndexError, ValueError):
+                continue
+    return None
 
 
 def register_get_hint(server: MCPServer) -> None:

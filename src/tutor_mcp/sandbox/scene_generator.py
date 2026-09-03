@@ -13,7 +13,12 @@ from typing import Any
 
 import httpx
 
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+FALLBACK_MODELS = [
+    os.environ.get("GEMINI_MODEL", "gemini-flash-lite-latest"),
+    "gemini-flash-lite-latest",
+    "gemini-pro-latest",
+    "gemini-flash-latest",
+]
 GEMINI_URL_TMPL = (
     "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 )
@@ -173,32 +178,34 @@ async def generate_scene_spec(
         },
     }
 
-    try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.post(
-                GEMINI_URL_TMPL.format(model=GEMINI_MODEL),
-                params={"key": api_key},
-                json=body,
-            )
-        if resp.status_code != 200:
-            return _fallback_with_query(query)
+    async with httpx.AsyncClient(timeout=25.0) as client:
+        for model in FALLBACK_MODELS:
+            try:
+                resp = await client.post(
+                    GEMINI_URL_TMPL.format(model=model),
+                    params={"key": api_key},
+                    json=body,
+                )
+                if resp.status_code != 200:
+                    continue
 
-        data = resp.json()
-        parts = data["candidates"][0]["content"]["parts"]
-        text = "".join(p.get("text", "") for p in parts).strip()
+                data = resp.json()
+                parts = data["candidates"][0]["content"]["parts"]
+                text = "".join(p.get("text", "") for p in parts).strip()
 
-        # Strip markdown code fences if Gemini wraps them anyway
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-        text = text.strip()
+                # Strip markdown code fences if Gemini wraps them anyway
+                if text.startswith("```"):
+                    text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+                if text.endswith("```"):
+                    text = text[:-3]
+                text = text.strip()
 
-        spec = json.loads(text)
-        return validate_scene_spec(spec)
+                spec = json.loads(text)
+                return validate_scene_spec(spec)
+            except (httpx.HTTPError, KeyError, IndexError, ValueError, json.JSONDecodeError):
+                continue
 
-    except (httpx.HTTPError, KeyError, IndexError, ValueError, json.JSONDecodeError):
-        return _fallback_with_query(query)
+    return _fallback_with_query(query)
 
 
 def _fallback_with_query(query: str) -> dict[str, Any]:

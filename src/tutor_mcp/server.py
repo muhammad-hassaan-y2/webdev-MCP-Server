@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from mcp.server.mcpserver import MCPServer
 
 from .tools.start_mission import register_start_mission

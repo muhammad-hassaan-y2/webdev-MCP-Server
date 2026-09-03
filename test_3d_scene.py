@@ -1,6 +1,6 @@
-﻿import httpx, json
+import httpx, json
 
-c = httpx.Client(base_url="http://localhost:3000")
+c = httpx.Client(base_url="http://localhost:3000", timeout=30.0)
 r = c.post("/mcp", json={"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"t","version":"1.0"}}}, headers={"Accept":"application/json, text/event-stream"})
 sid = r.headers.get("mcp-session-id")
 h = {"Accept": "application/json, text/event-stream", "Mcp-Session-Id": sid}
