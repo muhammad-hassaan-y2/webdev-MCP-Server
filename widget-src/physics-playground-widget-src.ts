@@ -303,6 +303,13 @@ function loop() {
   renderer.render(scene, camera);
 }
 
+(window as any).renderWorld = (w: PhysicsWorldSpec) => buildWorld(w);
+
+window.addEventListener("message", (e) => {
+  if (e.data?.physicsWorld) buildWorld(e.data.physicsWorld);
+  if (e.data?.params?.structuredContent?.physicsWorld) buildWorld(e.data.params.structuredContent.physicsWorld);
+});
+
 async function init() {
   initThree();
   loop();
@@ -316,7 +323,9 @@ async function init() {
     }
   };
 
-  await app.connect(new PostMessageTransport(window.parent, window.parent));
+  try {
+    await app.connect(new PostMessageTransport(window.parent, window.parent));
+  } catch (e) {}
 }
 
 init();

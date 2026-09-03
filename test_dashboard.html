@@ -163,12 +163,12 @@
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('physics')">💥 3D Physics Playground</button>
-    <button class="tab-btn" onclick="switchTab('audio')">🎛️ Audio Synthesizer</button>
-    <button class="tab-btn" onclick="switchTab('algo')">🧱 3D Algorithm Visualizer</button>
-    <button class="tab-btn" onclick="switchTab('space')">🌌 3D Space Visualizer</button>
-    <button class="tab-btn" onclick="switchTab('sandbox')">🌐 Web Dev Sandbox</button>
-    <button class="tab-btn" onclick="switchTab('mission')">🎯 Physics Projectile Mission</button>
+    <button class="tab-btn active" data-tab="physics" onclick="switchTab('physics', this)">💥 3D Physics Playground</button>
+    <button class="tab-btn" data-tab="audio" onclick="switchTab('audio', this)">🎛️ Audio Synthesizer</button>
+    <button class="tab-btn" data-tab="algo" onclick="switchTab('algo', this)">🧱 3D Algorithm Visualizer</button>
+    <button class="tab-btn" data-tab="space" onclick="switchTab('space', this)">🌌 3D Space Visualizer</button>
+    <button class="tab-btn" data-tab="sandbox" onclick="switchTab('sandbox', this)">🌐 Web Dev Sandbox</button>
+    <button class="tab-btn" data-tab="mission" onclick="switchTab('mission', this)">🎯 Physics Projectile Mission</button>
   </div>
 
   <div class="grid-container">
@@ -284,12 +284,24 @@
   </div>
 
   <script>
-    function switchTab(tabId) {
+    function switchTab(tabId, btnElement) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.widget-panel').forEach(panel => panel.classList.remove('active'));
 
-      event.currentTarget.classList.add('active');
-      document.getElementById('panel-' + tabId).classList.add('active');
+      if (btnElement) {
+        btnElement.classList.add('active');
+      } else {
+        const found = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+        if (found) found.classList.add('active');
+      }
+      const panel = document.getElementById('panel-' + tabId);
+      if (panel) panel.classList.add('active');
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialTab = urlParams.get('tab');
+    if (initialTab) {
+      switchTab(initialTab);
     }
 
     // Initialize mock sample data for widgets when loaded

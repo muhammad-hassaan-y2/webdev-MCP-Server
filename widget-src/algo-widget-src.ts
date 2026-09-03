@@ -239,6 +239,19 @@ function animate() {
   renderer.render(scene, camera);
 }
 
+function renderDirect(t: AlgorithmTrace) {
+  trace = t;
+  el("algo-title").textContent = `3D ${trace.algorithm} Simulation`;
+  el("algo-subtitle").textContent = `${trace.totalSteps} steps computed deterministically.`;
+  showStep(0);
+}
+(window as any).renderTrace = renderDirect;
+
+window.addEventListener("message", (e) => {
+  if (e.data?.algorithmTrace) renderDirect(e.data.algorithmTrace);
+  if (e.data?.params?.structuredContent?.algorithmTrace) renderDirect(e.data.params.structuredContent.algorithmTrace);
+});
+
 async function init() {
   initScene();
   setupControls();
@@ -248,14 +261,13 @@ async function init() {
   app.ontoolresult = (params: any) => {
     const sc = params?.structuredContent;
     if (sc?.algorithmTrace) {
-      trace = sc.algorithmTrace as AlgorithmTrace;
-      el("algo-title").textContent = `3D ${trace.algorithm} Simulation`;
-      el("algo-subtitle").textContent = `${trace.totalSteps} steps computed deterministically.`;
-      showStep(0);
+      renderDirect(sc.algorithmTrace as AlgorithmTrace);
     }
   };
 
-  await app.connect(new PostMessageTransport(window.parent, window.parent));
+  try {
+    await app.connect(new PostMessageTransport(window.parent, window.parent));
+  } catch (e) {}
 }
 
 init();

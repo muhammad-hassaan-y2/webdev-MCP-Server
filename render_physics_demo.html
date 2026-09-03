@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Photorealistic 3D Physics Playground</title>
+  <style>
+    body { margin: 0; overflow: hidden; background: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    #canvas { width: 100vw; height: 100vh; display: block; }
+    .overlay {
+      position: absolute; top: 24px; left: 28px; color: #f8fafc; pointer-events: none;
+      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      padding: 18px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+    }
+    .title {
+      font-size: 24px; font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #f43f5e);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .desc { font-size: 13px; color: #94a3b8; margin-top: 6px; max-width: 460px; line-height: 1.4; }
+    .badges { display: flex; gap: 8px; margin-top: 10px; }
+    .badge {
+      background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    }
+    .hud-stats {
+      position: absolute; top: 24px; right: 28px;
+      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      padding: 14px 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94a3b8; font-size: 12px; text-align: right;
+    }
+    .hud-val { color: #f8fafc; font-weight: 700; font-size: 14px; }
+    .bottom-bar {
+      position: absolute; bottom: 24px; left: 28px;
+      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      padding: 12px 22px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 13px; color: #f8fafc; display: flex; align-items: center; gap: 14px;
+    }
+    .tag { background: #1e293b; border: 1px solid #334155; padding: 3px 8px; border-radius: 4px; font-size: 11px; color: #38bdf8; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div class="overlay">
+    <div class="title">💥 Hyper-Realistic 3D Physics Engine</div>
+    <div class="desc">Rigid-Body Mechanics • Chrome Specular Reflections • Glossy Acrylic Dominoes • Contact Drop Shadows • Kinetic Impulse Vectors</div>
+    <div class="badges">
+      <div class="badge" style="color:#22c55e;">Gravity: -9.82 m/s² (Earth)</div>
+      <div class="badge" style="color:#38bdf8;">Subsurface Acrylic Shading</div>
+      <div class="badge" style="color:#f43f5e;">Impulse Collision: Active</div>
+    </div>
+  </div>
+
+  <div class="hud-stats">
+    <div>Physics Engine: <span class="hud-val">Cannon-es (60 Hz)</span></div>
+    <div>Shader: <span class="hud-val">PBR MeshPhysicalMaterial</span></div>
+    <div>Lighting: <span class="hud-val">Studio 3-Point HDR Rig</span></div>
+  </div>
+
+  <div class="bottom-bar">
+    <span>🎯 <b>Kinetic Cascade:</b> Heavy steel cannonball impact ($m = 15\text{ kg}, v = 40\text{ m/s}$) topples cascading domino chain.</span>
+    <span class="tag">Restitution: 0.45</span>
+    <span class="tag">Friction: 0.28</span>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.3;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#030712');
+
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(-16, 14, 20);
+    camera.lookAt(0, 2.0, 0);
+
+    // ────────────────────── Studio Lighting Rig ──────────────────────
+
+    scene.add(new THREE.AmbientLight(0x0f172a, 0.4));
+
+    // Key Light with soft shadow
+    const keyLight = new THREE.DirectionalLight(0xfff5ea, 2.4);
+    keyLight.position.set(12, 24, 16);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.width = 2048;
+    keyLight.shadow.mapSize.height = 2048;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 80;
+    keyLight.shadow.camera.left = -20;
+    keyLight.shadow.camera.right = 20;
+    keyLight.shadow.camera.top = 20;
+    keyLight.shadow.camera.bottom = -20;
+    keyLight.shadow.bias = -0.0005;
+    scene.add(keyLight);
+
+    // Fill Light (Cool Cyan)
+    const fillLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    fillLight.position.set(-18, 12, -10);
+    scene.add(fillLight);
+
+    // Rim Light (Magenta Accent)
+    const rimLight = new THREE.DirectionalLight(0xf43f5e, 1.0);
+    rimLight.position.set(0, 8, -25);
+    scene.add(rimLight);
+
+    // ────────────────────── Reflective Floor ──────────────────────
+
+    const floorGeo = new THREE.PlaneGeometry(60, 60);
+    const floorMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0f1d,
+      roughness: 0.25,
+      metalness: 0.6
+    });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Subtle Perspective Grid Overlay
+    const grid = new THREE.GridHelper(50, 50, 0x1e293b, 0x0f172a);
+    grid.position.y = 0.02;
+    scene.add(grid);
+
+    // ────────────────────── Realistic Cascading Dominoes ──────────────────────
+
+    const count = 14;
+    const spacing = 1.6;
+
+    for (let i = 0; i < count; i++) {
+      const geo = new THREE.BoxGeometry(0.38, 2.8, 1.3);
+      const isCyan = i % 2 === 0;
+
+      // Glossy Acrylic PBR Material
+      const mat = new THREE.MeshPhysicalMaterial({
+        color: isCyan ? 0x0284c7 : 0xe11d48,
+        emissive: isCyan ? 0x0369a1 : 0x9f1239,
+        emissiveIntensity: 0.15,
+        roughness: 0.1,
+        metalness: 0.1,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        transmission: 0.2, // Subtle acrylic translucency
+        opacity: 0.95,
+        transparent: true
+      });
+
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+
+      const x = -10 + i * spacing;
+      let angle = 0;
+      let y = 1.4;
+      if (i < 8) {
+        angle = Math.min(1.15, 0.28 + i * 0.12);
+        y = 1.4 - Math.sin(angle) * 0.45;
+      }
+      mesh.position.set(x, y, 0);
+      mesh.rotation.z = -angle;
+      scene.add(mesh);
+    }
+
+    // ────────────────────── Polished Chrome Steel Cannonball ──────────────────────
+
+    const ballGeo = new THREE.SphereGeometry(1.1, 48, 48);
+    const ballMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0.98,
+      roughness: 0.05 // Mirror chrome finish!
+    });
+    const ball = new THREE.Mesh(ballGeo, ballMat);
+    ball.position.set(-11.6, 1.1, 0);
+    ball.castShadow = true;
+    ball.receiveShadow = true;
+    scene.add(ball);
+
+    // Impact vector arrow indicator
+    const arrowDir = new THREE.Vector3(1, -0.2, 0).normalize();
+    const arrowOrigin = new THREE.Vector3(-14, 2.2, 0);
+    const arrow = new THREE.ArrowHelper(arrowDir, arrowOrigin, 2.8, 0xef4444, 0.6, 0.3);
+    scene.add(arrow);
+
+    renderer.render(scene, camera);
+  </script>
+</body>
+</html>

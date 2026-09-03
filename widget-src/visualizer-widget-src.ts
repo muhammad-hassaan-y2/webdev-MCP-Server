@@ -371,7 +371,17 @@ function setupButtons(spec: SceneSpec) {
   });
 }
 
-// ────────────────────── Boot ──────────────────────
+function renderDirect(spec: SceneSpec) {
+  buildScene(spec);
+  setupControls(el<HTMLCanvasElement>("scene-canvas"));
+  setupButtons(spec);
+}
+(window as any).renderScene = renderDirect;
+
+window.addEventListener("message", (e) => {
+  if (e.data?.scene) renderDirect(e.data.scene);
+  if (e.data?.params?.structuredContent?.scene) renderDirect(e.data.params.structuredContent.scene);
+});
 
 async function init() {
   app = new App({ name: "visualizer-widget", version: "1.0.0" }, {});
@@ -379,14 +389,13 @@ async function init() {
   app.ontoolresult = (params: any) => {
     const sc = params?.structuredContent;
     if (sc?.scene) {
-      const spec = sc.scene as SceneSpec;
-      buildScene(spec);
-      setupControls(el<HTMLCanvasElement>("scene-canvas"));
-      setupButtons(spec);
+      renderDirect(sc.scene as SceneSpec);
     }
   };
 
-  await app.connect(new PostMessageTransport(window.parent, window.parent));
+  try {
+    await app.connect(new PostMessageTransport(window.parent, window.parent));
+  } catch (e) {}
 }
 
 init();
