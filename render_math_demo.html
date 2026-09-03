@@ -6,9 +6,10 @@
   <style>
     body { margin: 0; overflow: hidden; background: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     #canvas { width: 100vw; height: 100vh; display: block; }
+    
     .overlay {
       position: absolute; top: 24px; left: 28px; color: #f8fafc; pointer-events: none;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(16px);
       padding: 18px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25);
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     }
@@ -23,13 +24,33 @@
       background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2);
       padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
     }
-    .hud-stats {
-      position: absolute; top: 24px; right: 28px;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
-      padding: 14px 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #94a3b8; font-size: 12px; text-align: right;
+
+    /* Explanation Card */
+    .explanation-panel {
+      position: absolute; top: 24px; right: 28px; width: 360px;
+      background: rgba(11, 17, 33, 0.9); backdrop-filter: blur(20px);
+      padding: 20px 22px; border-radius: 14px; border: 1px solid rgba(168, 85, 247, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85); color: #f8fafc; font-size: 12px;
+      line-height: 1.5;
     }
-    .hud-val { color: #f8fafc; font-weight: 700; font-size: 14px; }
+    .expl-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(168, 85, 247, 0.15); border: 1px solid #a855f7;
+      color: #c084fc; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .expl-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .formula-box {
+      background: #060913; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+      padding: 10px 14px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 12px;
+      color: #c084fc; text-align: center;
+    }
+    .expl-list { margin: 8px 0; padding-left: 18px; color: #cbd5e1; }
+    .expl-list li { margin-bottom: 6px; }
+    .expl-footer {
+      border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 12px;
+      font-size: 11px; color: #94a3b8;
+    }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -44,10 +65,26 @@
     </div>
   </div>
 
-  <div class="hud-stats">
-    <div>Mesh Resolution: <span class="hud-val">100 × 100 (20,000 Tris)</span></div>
-    <div>Shader: <span class="hud-val">PBR MeshPhysicalMaterial</span></div>
-    <div>Tone Mapping: <span class="hud-val">ACESFilmic 1.4</span></div>
+  <!-- Interactive Mathematics Explanation Panel -->
+  <div class="explanation-panel">
+    <div class="expl-tag">💡 Calculus & Topology Explanation</div>
+    <div class="expl-title">Radial Waves & Gradient Vector Fields</div>
+    <p>This surface visualizes a damped sinusoidal wave propagating radially outward from the origin in $\mathbb{R}^2$:</p>
+    
+    <div class="formula-box">
+      z(r) = 2.8 · sin(1.1 r) · e^(-0.07 r) | r = √(x² + y²)
+    </div>
+
+    <ul class="expl-list">
+      <li><b>Radial Symmetry:</b> Because $z$ depends only on $r = \sqrt{x^2 + y^2}$, horizontal cross-sections ($z = c$) form perfect concentric circles.</li>
+      <li><b>Gradient Vector ($\nabla z$):</b> The gradient $\nabla z = \frac{dz}{dr} \hat{r}$ points strictly along the radial direction, perpendicular to contour lines.</li>
+      <li><b>Critical Points ($\nabla z = 0$):</b> Stationary ring circles occur whenever $\frac{dz}{dr} = 0$, creating alternating crest rings and trough valleys.</li>
+      <li><b>Exponential Damping ($e^{-0.07r}$):</b> Models physical energy dissipation as wavefronts expand outward across the plane.</li>
+    </ul>
+
+    <div class="expl-footer">
+      📐 <i>Tip: Notice how the spectral vertex colors seamlessly map elevation from deep blue troughs to white crests.</i>
+    </div>
   </div>
 
   <canvas id="canvas"></canvas>
@@ -67,7 +104,6 @@
     camera.position.set(24, 20, 28);
     camera.lookAt(0, 0, 0);
 
-    // Studio Lighting
     scene.add(new THREE.AmbientLight(0x0f172a, 0.5));
     const key = new THREE.DirectionalLight(0xffffff, 2.0);
     key.position.set(20, 30, 20);
@@ -81,12 +117,10 @@
     magentaRim.position.set(0, -10, 25);
     scene.add(magentaRim);
 
-    // Floor Grid
     const grid = new THREE.GridHelper(40, 40, 0x1e293b, 0x0f172a);
     grid.position.y = -2.2;
     scene.add(grid);
 
-    // High-Resolution Parametric Surface with Vertex Colors
     const size = 22;
     const segs = 90;
     const geo = new THREE.PlaneGeometry(size, size, segs, segs);
@@ -102,15 +136,13 @@
       const y = Math.sin(r * 1.1) * 2.8 * Math.exp(-r * 0.07);
       pos.setY(i, y);
 
-      // Normalized height between -2.5 and +2.8 -> [0, 1]
       const t = Math.max(0, Math.min(1, (y + 2.0) / 4.8));
 
-      // Iridescent gradient: Deep Blue -> Cyan -> Purple -> Coral -> White
-      const c1 = new THREE.Color(0x0f172a); // Trough
-      const c2 = new THREE.Color(0x0284c7); // Mid-low
-      const c3 = new THREE.Color(0x8b5cf6); // Mid
-      const c4 = new THREE.Color(0xf43f5e); // Crest
-      const c5 = new THREE.Color(0xffffff); // Peak
+      const c1 = new THREE.Color(0x0f172a);
+      const c2 = new THREE.Color(0x0284c7);
+      const c3 = new THREE.Color(0x8b5cf6);
+      const c4 = new THREE.Color(0xf43f5e);
+      const c5 = new THREE.Color(0xffffff);
 
       let finalCol;
       if (t < 0.25) finalCol = c1.clone().lerp(c2, t / 0.25);
@@ -127,7 +159,6 @@
     geo.computeVertexNormals();
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-    // Metallic PBR Material
     const mat = new THREE.MeshPhysicalMaterial({
       vertexColors: true,
       metalness: 0.8,
@@ -139,13 +170,7 @@
     const mesh = new THREE.Mesh(geo, mat);
     scene.add(mesh);
 
-    // Glowing wireframe overlay
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x38bdf8,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.18
-    });
+    const wireMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, wireframe: true, transparent: true, opacity: 0.18 });
     const wireMesh = new THREE.Mesh(geo, wireMat);
     scene.add(wireMesh);
 

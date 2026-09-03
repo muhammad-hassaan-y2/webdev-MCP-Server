@@ -6,9 +6,10 @@
   <style>
     body { margin: 0; overflow: hidden; background: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     #canvas { width: 100vw; height: 100vh; display: block; }
+    
     .overlay {
       position: absolute; top: 24px; left: 28px; color: #f8fafc; pointer-events: none;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(16px);
       padding: 18px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25);
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     }
@@ -23,16 +24,37 @@
       background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2);
       padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
     }
-    .hud-stats {
-      position: absolute; top: 24px; right: 28px;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
-      padding: 14px 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #94a3b8; font-size: 12px; text-align: right;
+
+    /* Explanation Card */
+    .explanation-panel {
+      position: absolute; top: 24px; right: 28px; width: 360px;
+      background: rgba(11, 17, 33, 0.9); backdrop-filter: blur(20px);
+      padding: 20px 22px; border-radius: 14px; border: 1px solid rgba(244, 63, 94, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85); color: #f8fafc; font-size: 12px;
+      line-height: 1.5;
     }
-    .hud-val { color: #f8fafc; font-weight: 700; font-size: 14px; }
+    .expl-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(244, 63, 94, 0.15); border: 1px solid #e11d48;
+      color: #fb7185; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .expl-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .formula-box {
+      background: #060913; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+      padding: 10px 14px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 12px;
+      color: #fb7185; text-align: center;
+    }
+    .expl-list { margin: 8px 0; padding-left: 18px; color: #cbd5e1; }
+    .expl-list li { margin-bottom: 6px; }
+    .expl-footer {
+      border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 12px;
+      font-size: 11px; color: #94a3b8;
+    }
+
     .bottom-bar {
       position: absolute; bottom: 24px; left: 28px;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(16px);
       padding: 12px 22px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 13px; color: #f8fafc; display: flex; align-items: center; gap: 14px;
     }
@@ -51,10 +73,26 @@
     </div>
   </div>
 
-  <div class="hud-stats">
-    <div>Physics Engine: <span class="hud-val">Cannon-es (60 Hz)</span></div>
-    <div>Shader: <span class="hud-val">PBR MeshPhysicalMaterial</span></div>
-    <div>Lighting: <span class="hud-val">Studio 3-Point HDR Rig</span></div>
+  <!-- Interactive Physics Explanation Panel -->
+  <div class="explanation-panel">
+    <div class="expl-tag">💡 Physics Law Explanation</div>
+    <div class="expl-title">Momentum Transfer & Torque Cascade</div>
+    <p>When the projectile hits the first domino, kinetic energy is converted into rotational angular momentum:</p>
+    
+    <div class="formula-box">
+      p = m · v  |  τ = r × F  |  e = (v₂' - v₁') / (v₁ - v₂)
+    </div>
+
+    <ul class="expl-list">
+      <li><b>Impulse Collision ($J = \Delta p$):</b> The steel cannonball transfers sudden linear momentum into the lead domino.</li>
+      <li><b>Torque & Center of Mass:</b> Impact force applied at height $h$ generates an unbalancing torque $\tau = h \cdot F_{\text{impact}}$, tilting the center of mass past its base.</li>
+      <li><b>Cascade Propagation:</b> Each falling domino converts gravitational potential energy ($U = mgh$) into rotational kinetic energy, accelerating the cascade.</li>
+      <li><b>Restitution ($e = 0.45$):</b> An inelastic collision factor determines how much energy is dissipated as vibration upon contact.</li>
+    </ul>
+
+    <div class="expl-footer">
+      🎯 <i>Tip: Click canvas to launch cannonballs with different mass vectors and watch the momentum response.</i>
+    </div>
   </div>
 
   <div class="bottom-bar">
@@ -82,54 +120,34 @@
     camera.position.set(-16, 14, 20);
     camera.lookAt(0, 2.0, 0);
 
-    // ────────────────────── Studio Lighting Rig ──────────────────────
-
     scene.add(new THREE.AmbientLight(0x0f172a, 0.4));
 
-    // Key Light with soft shadow
     const keyLight = new THREE.DirectionalLight(0xfff5ea, 2.4);
     keyLight.position.set(12, 24, 16);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.width = 2048;
     keyLight.shadow.mapSize.height = 2048;
-    keyLight.shadow.camera.near = 0.5;
-    keyLight.shadow.camera.far = 80;
-    keyLight.shadow.camera.left = -20;
-    keyLight.shadow.camera.right = 20;
-    keyLight.shadow.camera.top = 20;
-    keyLight.shadow.camera.bottom = -20;
     keyLight.shadow.bias = -0.0005;
     scene.add(keyLight);
 
-    // Fill Light (Cool Cyan)
     const fillLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
     fillLight.position.set(-18, 12, -10);
     scene.add(fillLight);
 
-    // Rim Light (Magenta Accent)
     const rimLight = new THREE.DirectionalLight(0xf43f5e, 1.0);
     rimLight.position.set(0, 8, -25);
     scene.add(rimLight);
 
-    // ────────────────────── Reflective Floor ──────────────────────
-
     const floorGeo = new THREE.PlaneGeometry(60, 60);
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0x0a0f1d,
-      roughness: 0.25,
-      metalness: 0.6
-    });
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x0a0f1d, roughness: 0.25, metalness: 0.6 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Subtle Perspective Grid Overlay
     const grid = new THREE.GridHelper(50, 50, 0x1e293b, 0x0f172a);
     grid.position.y = 0.02;
     scene.add(grid);
-
-    // ────────────────────── Realistic Cascading Dominoes ──────────────────────
 
     const count = 14;
     const spacing = 1.6;
@@ -138,7 +156,6 @@
       const geo = new THREE.BoxGeometry(0.38, 2.8, 1.3);
       const isCyan = i % 2 === 0;
 
-      // Glossy Acrylic PBR Material
       const mat = new THREE.MeshPhysicalMaterial({
         color: isCyan ? 0x0284c7 : 0xe11d48,
         emissive: isCyan ? 0x0369a1 : 0x9f1239,
@@ -147,7 +164,7 @@
         metalness: 0.1,
         clearcoat: 1.0,
         clearcoatRoughness: 0.1,
-        transmission: 0.2, // Subtle acrylic translucency
+        transmission: 0.2,
         opacity: 0.95,
         transparent: true
       });
@@ -168,21 +185,14 @@
       scene.add(mesh);
     }
 
-    // ────────────────────── Polished Chrome Steel Cannonball ──────────────────────
-
     const ballGeo = new THREE.SphereGeometry(1.1, 48, 48);
-    const ballMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.98,
-      roughness: 0.05 // Mirror chrome finish!
-    });
+    const ballMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.98, roughness: 0.05 });
     const ball = new THREE.Mesh(ballGeo, ballMat);
     ball.position.set(-11.6, 1.1, 0);
     ball.castShadow = true;
     ball.receiveShadow = true;
     scene.add(ball);
 
-    // Impact vector arrow indicator
     const arrowDir = new THREE.Vector3(1, -0.2, 0).normalize();
     const arrowOrigin = new THREE.Vector3(-14, 2.2, 0);
     const arrow = new THREE.ArrowHelper(arrowDir, arrowOrigin, 2.8, 0xef4444, 0.6, 0.3);

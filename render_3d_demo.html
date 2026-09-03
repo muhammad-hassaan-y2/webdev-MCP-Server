@@ -6,9 +6,10 @@
   <style>
     body { margin: 0; overflow: hidden; background: #02040a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     #canvas { width: 100vw; height: 100vh; display: block; }
+    
     .overlay {
       position: absolute; top: 24px; left: 28px; color: #f8fafc; pointer-events: none;
-      background: rgba(10, 15, 30, 0.7); backdrop-filter: blur(16px);
+      background: rgba(10, 15, 30, 0.85); backdrop-filter: blur(16px);
       padding: 18px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25);
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     }
@@ -24,13 +25,34 @@
       background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2);
       padding: 4px 10px; border-radius: 6px; font-size: 11px; color: #38bdf8; font-weight: 600;
     }
-    .hud-stats {
-      position: absolute; top: 24px; right: 28px;
-      background: rgba(10, 15, 30, 0.7); backdrop-filter: blur(16px);
-      padding: 14px 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #94a3b8; font-size: 12px; text-align: right;
+
+    /* Interactive Explanation Panel */
+    .explanation-panel {
+      position: absolute; top: 24px; right: 28px; width: 360px;
+      background: rgba(10, 15, 30, 0.9); backdrop-filter: blur(20px);
+      padding: 20px 22px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85); color: #f8fafc; font-size: 12px;
+      line-height: 1.5;
     }
-    .hud-val { color: #f8fafc; font-weight: 700; font-size: 14px; }
+    .expl-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(14, 165, 233, 0.15); border: 1px solid #0284c7;
+      color: #38bdf8; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .expl-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .formula-box {
+      background: #060913; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+      padding: 10px 14px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 12px;
+      color: #38bdf8; text-align: center;
+    }
+    .expl-list { margin: 8px 0; padding-left: 18px; color: #cbd5e1; }
+    .expl-list li { margin-bottom: 6px; }
+    .expl-footer {
+      border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 12px;
+      font-size: 11px; color: #94a3b8;
+    }
+
     .legend {
       position: absolute; bottom: 24px; left: 28px; display: flex; gap: 14px;
       background: rgba(10, 15, 30, 0.75); backdrop-filter: blur(16px);
@@ -53,10 +75,26 @@
     </div>
   </div>
 
-  <div class="hud-stats">
-    <div>Rendering: <span class="hud-val">WebGL 2.0 (PBR)</span></div>
-    <div>Tone Mapping: <span class="hud-val">ACESFilmic (Exposure 1.25)</span></div>
-    <div>Shadow Engine: <span class="hud-val">PCF Soft Shadows</span></div>
+  <!-- Interactive Scientific Explanation Panel -->
+  <div class="explanation-panel">
+    <div class="expl-tag">💡 Astrophysical Explanation</div>
+    <div class="expl-title">Keplerian Orbital Dynamics & Gravity</div>
+    <p>Planetary bodies follow elliptical orbits bound by the Sun's central gravitational pull, described by Newton's Law of Universal Gravitation:</p>
+    
+    <div class="formula-box">
+      F = G · (M_sun · m_planet) / r²
+    </div>
+
+    <ul class="expl-list">
+      <li><b>Kepler's 3rd Law:</b> Orbital period squared is proportional to the semi-major axis cubed ($T² \propto a³$). Closer planets orbit significantly faster.</li>
+      <li><b>Mercury (Inner):</b> Moves at <b>47.9 km/s</b> with an 88-day orbit.</li>
+      <li><b>Saturn (Outer):</b> Moves at only <b>9.7 km/s</b>, taking 29 Earth years.</li>
+      <li><b>Atmospheric Scattering:</b> Earth's blue halo is caused by <b>Rayleigh scattering</b>, deflecting short blue wavelengths through the atmosphere.</li>
+    </ul>
+
+    <div class="expl-footer">
+      🔭 <i>Tip: Orbit the camera to observe how day/night shadow terminators align away from the Sun.</i>
+    </div>
   </div>
 
   <div class="legend">
@@ -92,7 +130,6 @@
       const c = document.createElement('canvas');
       c.width = 1024; c.height = 512;
       const ctx = c.getContext('2d');
-      // Ocean deep blue gradient
       const grad = ctx.createLinearGradient(0, 0, 0, 512);
       grad.addColorStop(0, '#0c2340');
       grad.addColorStop(0.5, '#10375c');
@@ -100,7 +137,6 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 1024, 512);
 
-      // Continents procedural patches
       ctx.fillStyle = '#1e3f20';
       function drawContinent(cx, cy, rx, ry) {
         ctx.beginPath();
@@ -113,16 +149,12 @@
         ctx.closePath();
         ctx.fill();
       }
-      // Americas
       drawContinent(250, 200, 90, 80);
       drawContinent(320, 350, 80, 90);
-      // Eurasia & Africa
       drawContinent(620, 180, 160, 90);
       drawContinent(600, 320, 100, 90);
-      // Australia
       drawContinent(850, 360, 60, 50);
 
-      // Ice caps
       ctx.fillStyle = '#e2e8f0';
       ctx.fillRect(0, 0, 1024, 35);
       ctx.fillRect(0, 477, 1024, 35);
@@ -145,11 +177,9 @@
       bands.forEach((b, i) => {
         ctx.fillStyle = b;
         ctx.fillRect(0, i * h, 1024, h + 2);
-        // Atmospheric swirls
         ctx.fillStyle = 'rgba(255,255,255,0.08)';
         ctx.fillRect(0, i * h + 4, 1024, h * 0.3);
       });
-      // Great Red Spot
       ctx.beginPath();
       ctx.ellipse(650, 320, 50, 28, 0, 0, Math.PI * 2);
       ctx.fillStyle = '#b91c1c';
@@ -169,14 +199,13 @@
       grad.addColorStop(0.0, 'rgba(0,0,0,0)');
       grad.addColorStop(0.15, 'rgba(210,180,140,0.85)');
       grad.addColorStop(0.45, 'rgba(235,215,185,0.95)');
-      grad.addColorStop(0.55, 'rgba(10,10,10,0.1)'); // Cassini Division!
+      grad.addColorStop(0.55, 'rgba(10,10,10,0.1)');
       grad.addColorStop(0.60, 'rgba(200,175,140,0.8)');
       grad.addColorStop(0.85, 'rgba(180,150,120,0.6)');
       grad.addColorStop(1.0, 'rgba(0,0,0,0)');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 512, 1);
-      const tex = new THREE.CanvasTexture(c);
-      return tex;
+      return new THREE.CanvasTexture(c);
     }
 
     function createSunTexture() {
@@ -185,7 +214,6 @@
       const ctx = c.getContext('2d');
       ctx.fillStyle = '#f59e0b';
       ctx.fillRect(0, 0, 512, 256);
-      // Granulation noise
       for (let i = 0; i < 4000; i++) {
         const x = Math.random() * 512;
         const y = Math.random() * 256;
@@ -195,9 +223,7 @@
       return new THREE.CanvasTexture(c);
     }
 
-    // ────────────────────── 3D Scene Setup ──────────────────────
-
-    // Deep Space Starfield with multi-colored stars
+    // Starfield
     const starGeo = new THREE.BufferGeometry();
     const starCount = 1800;
     const starPos = new Float32Array(starCount * 3);
@@ -207,190 +233,88 @@
       starPos[i * 3 + 1] = (Math.random() - 0.5) * 350;
       starPos[i * 3 + 2] = (Math.random() - 0.5) * 350;
       const c = Math.random();
-      if (c > 0.8) { starColors[i * 3] = 0.6; starColors[i * 3 + 1] = 0.8; starColors[i * 3 + 2] = 1.0; } // Blue
-      else if (c > 0.6) { starColors[i * 3] = 1.0; starColors[i * 3 + 1] = 0.8; starColors[i * 3 + 2] = 0.5; } // Yellow
-      else { starColors[i * 3] = 0.9; starColors[i * 3 + 1] = 0.9; starColors[i * 3 + 2] = 0.95; } // White
+      if (c > 0.8) { starColors[i * 3] = 0.6; starColors[i * 3 + 1] = 0.8; starColors[i * 3 + 2] = 1.0; }
+      else if (c > 0.6) { starColors[i * 3] = 1.0; starColors[i * 3 + 1] = 0.8; starColors[i * 3 + 2] = 0.5; }
+      else { starColors[i * 3] = 0.9; starColors[i * 3 + 1] = 0.9; starColors[i * 3 + 2] = 0.95; }
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
-    const starMat = new THREE.PointsMaterial({ size: 0.85, vertexColors: true, transparent: true, opacity: 0.85 });
-    scene.add(new THREE.Points(starGeo, starMat));
+    scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.85, vertexColors: true, transparent: true, opacity: 0.85 })));
 
     // Sun Core
-    const sunTex = createSunTexture();
-    const sunGeo = new THREE.SphereGeometry(3.6, 48, 48);
-    const sunMat = new THREE.MeshBasicMaterial({
-      map: sunTex,
-      color: 0xffffff
-    });
-    const sun = new THREE.Mesh(sunGeo, sunMat);
+    const sun = new THREE.Mesh(new THREE.SphereGeometry(3.6, 48, 48), new THREE.MeshBasicMaterial({ map: createSunTexture(), color: 0xffffff }));
     scene.add(sun);
 
-    // Sun Volumetric Corona Glow
-    const coronaGeo = new THREE.SphereGeometry(4.4, 32, 32);
-    const coronaMat = new THREE.MeshBasicMaterial({
-      color: 0xffa200,
-      transparent: true,
-      opacity: 0.35,
-      side: THREE.BackSide
-    });
-    scene.add(new THREE.Mesh(coronaGeo, coronaMat));
+    // Coronas
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(4.4, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffa200, transparent: true, opacity: 0.35, side: THREE.BackSide })));
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(5.4, 32, 32), new THREE.MeshBasicMaterial({ color: 0xff5500, transparent: true, opacity: 0.12, side: THREE.BackSide })));
 
-    const outerGlowGeo = new THREE.SphereGeometry(5.4, 32, 32);
-    const outerGlowMat = new THREE.MeshBasicMaterial({
-      color: 0xff5500,
-      transparent: true,
-      opacity: 0.12,
-      side: THREE.BackSide
-    });
-    scene.add(new THREE.Mesh(outerGlowGeo, outerGlowMat));
-
-    // Realistic Sunlight: Point light with inverse-square falloff
+    // Sunlight
     const sunLight = new THREE.PointLight(0xfff7ed, 3.5, 120, 0.6);
     sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.mapSize.width = 2048; sunLight.shadow.mapSize.height = 2048;
     sunLight.shadow.bias = -0.001;
     scene.add(sunLight);
-
-    // Subtle Ambient Light from galaxies
     scene.add(new THREE.AmbientLight(0x0f172a, 0.25));
 
-    // ────────────────────── Planets Creation ──────────────────────
-
-    // 1. Mercury
-    const mercMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.7, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8, metalness: 0.2 })
-    );
-    mercMesh.position.set(6.8, 0, 2);
-    mercMesh.castShadow = true; mercMesh.receiveShadow = true;
+    // Mercury
+    const mercMesh = new THREE.Mesh(new THREE.SphereGeometry(0.7, 32, 32), new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 }));
+    mercMesh.position.set(6.8, 0, 2); mercMesh.castShadow = true; mercMesh.receiveShadow = true;
     scene.add(mercMesh);
 
-    // 2. Venus (Dense clouds)
-    const venusMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(1.0, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0xfcd34d, roughness: 0.3, metalness: 0.1 })
-    );
-    venusMesh.position.set(-10.2, 0, 4);
-    venusMesh.castShadow = true; venusMesh.receiveShadow = true;
+    // Venus
+    const venusMesh = new THREE.Mesh(new THREE.SphereGeometry(1.0, 32, 32), new THREE.MeshStandardMaterial({ color: 0xfcd34d, roughness: 0.3 }));
+    venusMesh.position.set(-10.2, 0, 4); venusMesh.castShadow = true; venusMesh.receiveShadow = true;
     scene.add(venusMesh);
 
-    // 3. Earth (Textured Oceans + Continents + Atmosphere)
+    // Earth + Atmosphere + Moon
     const earthGroup = new THREE.Group();
     earthGroup.position.set(15.2, 0, -3);
-
-    const earthTex = createEarthTexture();
-    const earthMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(1.2, 48, 48),
-      new THREE.MeshStandardMaterial({
-        map: earthTex,
-        roughness: 0.5,
-        metalness: 0.1
-      })
-    );
+    const earthMesh = new THREE.Mesh(new THREE.SphereGeometry(1.2, 48, 48), new THREE.MeshStandardMaterial({ map: createEarthTexture(), roughness: 0.5 }));
     earthMesh.castShadow = true; earthMesh.receiveShadow = true;
     earthGroup.add(earthMesh);
-
-    // Earth Atmospheric Fresnel Halo
-    const atmosMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(1.34, 32, 32),
-      new THREE.MeshBasicMaterial({
-        color: 0x38bdf8,
-        transparent: true,
-        opacity: 0.28,
-        side: THREE.BackSide
-      })
-    );
-    earthGroup.add(atmosMesh);
-
-    // Moon
-    const moonMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.32, 24, 24),
-      new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.9 })
-    );
-    moonMesh.position.set(2.4, 0.4, 0.8);
-    moonMesh.castShadow = true;
+    earthGroup.add(new THREE.Mesh(new THREE.SphereGeometry(1.34, 32, 32), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.28, side: THREE.BackSide })));
+    const moonMesh = new THREE.Mesh(new THREE.SphereGeometry(0.32, 24, 24), new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.9 }));
+    moonMesh.position.set(2.4, 0.4, 0.8); moonMesh.castShadow = true;
     earthGroup.add(moonMesh);
-
     scene.add(earthGroup);
 
-    // 4. Mars (Red Planet with polar ice)
-    const marsMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(0.85, 32, 32),
-      new THREE.MeshStandardMaterial({ color: 0xc2410c, roughness: 0.75, metalness: 0.15 })
-    );
-    marsMesh.position.set(-18.5, 0, -8);
-    marsMesh.castShadow = true; marsMesh.receiveShadow = true;
+    // Mars
+    const marsMesh = new THREE.Mesh(new THREE.SphereGeometry(0.85, 32, 32), new THREE.MeshStandardMaterial({ color: 0xc2410c, roughness: 0.75 }));
+    marsMesh.position.set(-18.5, 0, -8); marsMesh.castShadow = true; marsMesh.receiveShadow = true;
     scene.add(marsMesh);
 
-    // 5. Jupiter (High-Res Banded Texture)
-    const jupTex = createJupiterTexture();
-    const jupMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(2.5, 48, 48),
-      new THREE.MeshStandardMaterial({
-        map: jupTex,
-        roughness: 0.45,
-        metalness: 0.05
-      })
-    );
-    jupMesh.position.set(24.5, 0, 10);
-    jupMesh.castShadow = true; jupMesh.receiveShadow = true;
+    // Jupiter
+    const jupMesh = new THREE.Mesh(new THREE.SphereGeometry(2.5, 48, 48), new THREE.MeshStandardMaterial({ map: createJupiterTexture(), roughness: 0.45 }));
+    jupMesh.position.set(24.5, 0, 10); jupMesh.castShadow = true; jupMesh.receiveShadow = true;
     scene.add(jupMesh);
 
-    // 6. Saturn with Realistic Rings & Shadows
+    // Saturn + Ring
     const saturnGroup = new THREE.Group();
     saturnGroup.position.set(-32.0, 0, 6);
-
-    const saturnMesh = new THREE.Mesh(
-      new THREE.SphereGeometry(2.0, 48, 48),
-      new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.5 })
-    );
+    const saturnMesh = new THREE.Mesh(new THREE.SphereGeometry(2.0, 48, 48), new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.5 }));
     saturnMesh.castShadow = true; saturnMesh.receiveShadow = true;
     saturnGroup.add(saturnMesh);
 
-    // Saturn Rings with Cassini Division
-    const ringTex = createSaturnRingTexture();
     const ringGeo = new THREE.RingGeometry(2.6, 5.2, 64);
-    // Orient texture radially
     const posAttr = ringGeo.attributes.position;
     const uvs = [];
     for (let i = 0; i < posAttr.count; i++) {
-      const x = posAttr.getX(i);
-      const y = posAttr.getY(i);
-      const dist = Math.sqrt(x * x + y * y);
-      const u = (dist - 2.6) / (5.2 - 2.6);
-      uvs.push(u, 0.5);
+      const dist = Math.sqrt(posAttr.getX(i)**2 + posAttr.getY(i)**2);
+      uvs.push((dist - 2.6) / 2.6, 0.5);
     }
     ringGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-
-    const ringMat = new THREE.MeshStandardMaterial({
-      map: ringTex,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.92,
-      roughness: 0.4
-    });
-    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-    ringMesh.rotation.x = Math.PI / 2.3;
-    ringMesh.rotation.y = Math.PI / 8;
-    ringMesh.receiveShadow = true;
+    const ringMesh = new THREE.Mesh(ringGeo, new THREE.MeshStandardMaterial({ map: createSaturnRingTexture(), side: THREE.DoubleSide, transparent: true, opacity: 0.92, roughness: 0.4 }));
+    ringMesh.rotation.x = Math.PI / 2.3; ringMesh.rotation.y = Math.PI / 8; ringMesh.receiveShadow = true;
     saturnGroup.add(ringMesh);
-
     scene.add(saturnGroup);
 
-    // ────────────────────── Elegant Orbit Guides ──────────────────────
-
-    const distances = [6.8, 10.2, 15.2, 18.5, 24.5, 32.0];
-    distances.forEach(d => {
-      const oGeo = new THREE.BufferGeometry();
+    // Orbit paths
+    [6.8, 10.2, 15.2, 18.5, 24.5, 32.0].forEach(d => {
       const pts = [];
-      for (let a = 0; a <= Math.PI * 2; a += 0.05) {
-        pts.push(Math.cos(a) * d, 0, Math.sin(a) * d);
-      }
-      oGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-      const oMat = new THREE.LineBasicMaterial({ color: 0x1e293b, transparent: true, opacity: 0.45 });
-      scene.add(new THREE.Line(oGeo, oMat));
+      for (let a = 0; a <= Math.PI * 2; a += 0.05) pts.push(Math.cos(a) * d, 0, Math.sin(a) * d);
+      const oGeo = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+      scene.add(new THREE.Line(oGeo, new THREE.LineBasicMaterial({ color: 0x1e293b, transparent: true, opacity: 0.45 })));
     });
 
     renderer.render(scene, camera);

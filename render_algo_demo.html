@@ -6,9 +6,10 @@
   <style>
     body { margin: 0; overflow: hidden; background: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     #canvas { width: 100vw; height: 100vh; display: block; }
+    
     .overlay {
       position: absolute; top: 24px; left: 28px; color: #f8fafc; pointer-events: none;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(16px);
       padding: 18px 24px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.25);
       box-shadow: 0 20px 40px rgba(0,0,0,0.8);
     }
@@ -23,9 +24,37 @@
       background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2);
       padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
     }
+
+    /* Explanation Card */
+    .explanation-panel {
+      position: absolute; top: 24px; right: 28px; width: 360px;
+      background: rgba(11, 17, 33, 0.9); backdrop-filter: blur(20px);
+      padding: 20px 22px; border-radius: 14px; border: 1px solid rgba(52, 211, 153, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85); color: #f8fafc; font-size: 12px;
+      line-height: 1.5;
+    }
+    .expl-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(52, 211, 153, 0.15); border: 1px solid #10b981;
+      color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 9999px;
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .expl-title { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+    .formula-box {
+      background: #060913; border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+      padding: 10px 14px; margin: 10px 0; font-family: 'Courier New', monospace; font-size: 12px;
+      color: #34d399; text-align: center;
+    }
+    .expl-list { margin: 8px 0; padding-left: 18px; color: #cbd5e1; }
+    .expl-list li { margin-bottom: 6px; }
+    .expl-footer {
+      border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 12px;
+      font-size: 11px; color: #94a3b8;
+    }
+
     .narrative {
       position: absolute; bottom: 24px; left: 28px;
-      background: rgba(11, 17, 33, 0.75); backdrop-filter: blur(16px);
+      background: rgba(11, 17, 33, 0.85); backdrop-filter: blur(16px);
       padding: 12px 22px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08);
       font-size: 13px; color: #f8fafc; display: flex; align-items: center; gap: 16px;
     }
@@ -43,6 +72,28 @@
       <div class="badge" style="color:#38bdf8;">Step 14 / 28</div>
       <div class="badge">Comparisons: 14</div>
       <div class="badge" style="color:#f43f5e;">Active Swap: 8</div>
+    </div>
+  </div>
+
+  <!-- Interactive Algorithm Explanation Panel -->
+  <div class="explanation-panel">
+    <div class="expl-tag">💡 Algorithm Theory Explanation</div>
+    <div class="expl-title">Loop Invariants & Time Complexity</div>
+    <p>Bubble Sort repeatedly steps through the list, comparing adjacent pairs and swapping them if out of order:</p>
+    
+    <div class="formula-box">
+      C(n) = n(n-1)/2 ∈ O(n²) | Space: O(1) Auxiliary
+    </div>
+
+    <ul class="expl-list">
+      <li><b>Loop Invariant:</b> After pass $k$, the largest $k$ elements are guaranteed to be in their final positions at the right (shown in 🟩 <b>Emerald Green</b>).</li>
+      <li><b>Active Swap (🟥 Crimson):</b> Elements $38$ and $12$ are adjacent out of order ($38 > 12$). A positional swap is actively executed in $O(1)$.</li>
+      <li><b>Worst-Case Scenario ($O(n^2)$):</b> Reverse sorted array requires $\frac{n(n-1)}{2}$ comparisons and equal swaps.</li>
+      <li><b>Stability:</b> Maintains relative order of equal items because it only swaps when strictly greater ($A[j] > A[j+1]$).</li>
+    </ul>
+
+    <div class="expl-footer">
+      🧱 <i>Tip: Watch how the emerald green pillar zone grows from right to left as larger numbers bubble up.</i>
     </div>
   </div>
 
@@ -75,7 +126,6 @@
     camera.position.set(-6, 16, 26);
     camera.lookAt(0, 5, 0);
 
-    // Studio Lighting Rig
     scene.add(new THREE.AmbientLight(0x0f172a, 0.45));
     const key = new THREE.DirectionalLight(0xfff5ea, 2.2);
     key.position.set(15, 28, 18);
@@ -89,13 +139,8 @@
     cyanRim.position.set(-18, 14, -10);
     scene.add(cyanRim);
 
-    // Reflective Floor
     const floorGeo = new THREE.PlaneGeometry(50, 50);
-    const floorMat = new THREE.MeshStandardMaterial({
-      color: 0x090e1a,
-      roughness: 0.25,
-      metalness: 0.7
-    });
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x090e1a, roughness: 0.25, metalness: 0.7 });
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
@@ -105,7 +150,6 @@
     grid.position.y = 0.02;
     scene.add(grid);
 
-    // Array & Voxel Pillars
     const array = [14, 18, 22, 38, 12, 29, 44, 48];
     const states = ['blue', 'blue', 'blue', 'swap', 'swap', 'amber', 'green', 'green'];
     const n = array.length;
@@ -130,7 +174,6 @@
         emissive = 0x047857;
       }
 
-      // Frosted Acrylic Material with Clearcoat & Transmission
       const mat = new THREE.MeshPhysicalMaterial({
         color: col,
         emissive: emissive,
@@ -150,13 +193,8 @@
       mesh.receiveShadow = true;
       scene.add(mesh);
 
-      // Inner Glowing Core
       const coreGeo = new THREE.BoxGeometry(0.7, h * 0.85, 0.7);
-      const coreMat = new THREE.MeshBasicMaterial({
-        color: col,
-        transparent: true,
-        opacity: 0.7
-      });
+      const coreMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.7 });
       const coreMesh = new THREE.Mesh(coreGeo, coreMat);
       coreMesh.position.set(startX + i * spacing, h / 2, 0);
       scene.add(coreMesh);
