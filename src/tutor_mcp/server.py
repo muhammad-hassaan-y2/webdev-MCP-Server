@@ -9,8 +9,13 @@ from .tools.check_simulation_answer import register_check_simulation_answer
 from .tools.get_hint import register_get_hint
 from .tools.record_progress import register_record_progress
 from .tools.generate_3d_scene import register_generate_3d_scene
+from .tools.visualize_math_surface import register_visualize_math_surface
+from .tools.preview_html_css import register_preview_html_css
+from .tools.run_code_scratchpad import register_run_code_scratchpad
+from .tools.get_student_analytics import register_get_student_analytics
 from .widget.register_resource import register_widget_resource
 from .widget.register_visualizer_resource import register_visualizer_resource
+from .widget.register_sandbox_resource import register_sandbox_resource
 
 
 def build_server() -> MCPServer:
@@ -22,8 +27,13 @@ def build_server() -> MCPServer:
     register_get_hint(server)
     register_record_progress(server)
     register_generate_3d_scene(server)
+    register_visualize_math_surface(server)
+    register_preview_html_css(server)
+    register_run_code_scratchpad(server)
+    register_get_student_analytics(server)
     register_widget_resource(server)
     register_visualizer_resource(server)
+    register_sandbox_resource(server)
 
     return server
 

@@ -39,6 +39,11 @@ async function main() {
     "visualizer-template.html",
     "visualizer-widget.html"
   );
+  await bundleWidget(
+    "sandbox-widget-src.ts",
+    "sandbox-template.html",
+    "sandbox-widget.html"
+  );
 }
 
 main().catch((err) => {

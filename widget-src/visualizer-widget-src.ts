@@ -11,8 +11,16 @@ interface AnimationSpec {
   orbitCenter?: [number, number, number];
 }
 
+interface SurfaceGrid {
+  width: number;
+  depth: number;
+  segmentsX: number;
+  segmentsY: number;
+  heights: number[];
+}
+
 interface SceneObject {
-  type: "box" | "sphere" | "cylinder" | "torus" | "cone" | "ring" | "plane";
+  type: "box" | "sphere" | "cylinder" | "torus" | "cone" | "ring" | "plane" | "surface";
   position: [number, number, number];
   rotation?: [number, number, number];
   scale?: [number, number, number];
@@ -20,6 +28,8 @@ interface SceneObject {
   opacity?: number;
   label?: string;
   animation: AnimationSpec;
+  surfaceGrid?: SurfaceGrid;
+  wireframe?: boolean;
 }
 
 interface LightSpec {
@@ -148,12 +158,32 @@ function buildScene(spec: SceneSpec) {
   animStates.length = 0;
 
   for (const obj of spec.objects) {
-    const geo = createGeometry(obj.type);
+    let geo: THREE.BufferGeometry;
+    let side = THREE.FrontSide;
+
+    if (obj.type === "surface" && obj.surfaceGrid) {
+      const { width, depth, segmentsX, segmentsY, heights } = obj.surfaceGrid;
+      const plane = new THREE.PlaneGeometry(width, depth, segmentsX, segmentsY);
+      plane.rotateX(-Math.PI / 2);
+      const pos = plane.attributes.position;
+      for (let i = 0; i < heights.length && i < pos.count; i++) {
+        pos.setY(i, heights[i]);
+      }
+      pos.needsUpdate = true;
+      plane.computeVertexNormals();
+      geo = plane;
+      side = THREE.DoubleSide;
+    } else {
+      geo = createGeometry(obj.type);
+    }
+
     const mat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(obj.color || "#4a90d9"),
       transparent: (obj.opacity ?? 1) < 1,
       opacity: obj.opacity ?? 1,
-      roughness: 0.5,
+      wireframe: obj.wireframe ?? false,
+      side,
+      roughness: 0.4,
       metalness: 0.1,
     });
     const mesh = new THREE.Mesh(geo, mat);
