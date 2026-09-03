@@ -6,9 +6,11 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 
-async function main() {
+const outDir = path.join(root, "widget-src/generated");
+
+async function bundleWidget(tsEntry, templateFile, outputFile) {
   const result = await build({
-    entryPoints: [path.join(root, "widget-src/mission-widget-src.ts")],
+    entryPoints: [path.join(root, `widget-src/${tsEntry}`)],
     bundle: true,
     format: "iife",
     platform: "browser",
@@ -18,13 +20,25 @@ async function main() {
   });
 
   const bundledJs = result.outputFiles[0].text;
-  const template = await readFile(path.join(root, "widget-src/template.html"), "utf8");
+  const template = await readFile(path.join(root, `widget-src/${templateFile}`), "utf8");
   const html = template.replace("<!--WIDGET_SCRIPT-->", `<script>\n${bundledJs}\n</script>`);
 
-  const outDir = path.join(root, "widget-src/generated");
   await mkdir(outDir, { recursive: true });
-  await writeFile(path.join(outDir, "mission-widget.html"), html, "utf8");
-  console.log("Widget bundled -> widget-src/generated/mission-widget.html");
+  await writeFile(path.join(outDir, outputFile), html, "utf8");
+  console.log(`Widget bundled -> widget-src/generated/${outputFile}`);
+}
+
+async function main() {
+  await bundleWidget(
+    "mission-widget-src.ts",
+    "template.html",
+    "mission-widget.html"
+  );
+  await bundleWidget(
+    "visualizer-widget-src.ts",
+    "visualizer-template.html",
+    "visualizer-widget.html"
+  );
 }
 
 main().catch((err) => {

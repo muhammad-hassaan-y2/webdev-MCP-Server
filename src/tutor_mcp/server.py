@@ -6,7 +6,9 @@ from .tools.run_tests import register_run_tests
 from .tools.check_simulation_answer import register_check_simulation_answer
 from .tools.get_hint import register_get_hint
 from .tools.record_progress import register_record_progress
+from .tools.generate_3d_scene import register_generate_3d_scene
 from .widget.register_resource import register_widget_resource
+from .widget.register_visualizer_resource import register_visualizer_resource
 
 
 def build_server() -> MCPServer:
@@ -17,7 +19,9 @@ def build_server() -> MCPServer:
     register_check_simulation_answer(server)
     register_get_hint(server)
     register_record_progress(server)
+    register_generate_3d_scene(server)
     register_widget_resource(server)
+    register_visualizer_resource(server)
 
     return server
 
