@@ -1,0 +1,76 @@
+<div id="algo-widget" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; width: 100%; margin: 0 auto; color: #f8fafc; background: #0b0f19; border-radius: 12px; border: 1px solid #1e293b; overflow: hidden;">
+  <style>
+    #algo-widget * { box-sizing: border-box; }
+    #algo-widget .algo-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: #0f172a; border-bottom: 1px solid #1e293b;
+    }
+    #algo-widget .algo-title { font-size: 14px; font-weight: 600; color: #38bdf8; margin: 0; }
+    #algo-widget .algo-desc { font-size: 11px; color: #94a3b8; margin: 2px 0 0; }
+    #algo-widget .stats-badges { display: flex; gap: 8px; font-size: 11px; }
+    #algo-widget .badge {
+      background: #1e293b; padding: 4px 8px; border-radius: 4px; border: 1px solid #334155; color: #cbd5e1;
+    }
+    #algo-widget canvas#algo-canvas {
+      width: 100%; height: 320px; display: block; background: #080c14; cursor: grab;
+    }
+    #algo-widget canvas#algo-canvas:active { cursor: grabbing; }
+    #algo-widget .algo-controls {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+      padding: 10px 16px; background: #0f172a; border-top: 1px solid #1e293b;
+    }
+    #algo-widget .btn-group { display: flex; gap: 6px; align-items: center; }
+    #algo-widget .btn {
+      font-size: 12px; padding: 6px 12px; border-radius: 6px; border: 1px solid #334155;
+      background: #1e293b; color: #f8fafc; cursor: pointer; transition: all 0.15s; font-weight: 500;
+    }
+    #algo-widget .btn:hover { background: #334155; border-color: #475569; }
+    #algo-widget .btn.primary { background: #0284c7; border-color: #38bdf8; color: #fff; }
+    #algo-widget .btn.primary:hover { background: #0369a1; }
+    #algo-widget .legend { display: flex; gap: 10px; font-size: 11px; color: #94a3b8; }
+    #algo-widget .legend-item { display: flex; align-items: center; gap: 4px; }
+    #algo-widget .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+    #algo-widget #step-narrative {
+      padding: 6px 16px; background: #090e17; font-size: 12px; color: #cbd5e1;
+      border-top: 1px solid #1e293b; min-height: 28px; display: flex; align-items: center;
+    }
+  </style>
+
+  <div class="algo-header">
+    <div>
+      <h3 class="algo-title" id="algo-title">3D Algorithm Visualizer</h3>
+      <p class="algo-desc" id="algo-subtitle">Interactive 3D Voxel Step Simulation</p>
+    </div>
+    <div class="stats-badges">
+      <div class="badge" id="badge-step">Step: 0 / 0</div>
+      <div class="badge" id="badge-comparisons">Comparisons: 0</div>
+      <div class="badge" id="badge-swaps">Swaps: 0</div>
+    </div>
+  </div>
+
+  <canvas id="algo-canvas"></canvas>
+
+  <div id="step-narrative">Ready to begin simulation.</div>
+
+  <div class="algo-controls">
+    <div class="btn-group">
+      <button class="btn" id="btn-prev" title="Previous step">⏪ Prev</button>
+      <button class="btn primary" id="btn-play">▶️ Play</button>
+      <button class="btn" id="btn-next" title="Next step">⏩ Next</button>
+      <button class="btn" id="btn-reset" title="Reset to start">🔄 Reset</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span>Default</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span>Comparing</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span>Swapping</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span>Sorted</div>
+    </div>
+
+    <div class="btn-group">
+      <label style="font-size: 11px; color: #94a3b8;">Speed:</label>
+      <button class="btn" id="btn-speed">1x</button>
+    </div>
+  </div>
+</div>
+<!--WIDGET_SCRIPT-->

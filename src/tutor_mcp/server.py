@@ -13,9 +13,15 @@ from .tools.visualize_math_surface import register_visualize_math_surface
 from .tools.preview_html_css import register_preview_html_css
 from .tools.run_code_scratchpad import register_run_code_scratchpad
 from .tools.get_student_analytics import register_get_student_analytics
+from .tools.visualize_algorithm_3d import register_visualize_algorithm_3d
+from .tools.interactive_audio_synth import register_interactive_audio_synth
+from .tools.physics_rigid_body_playground import register_physics_rigid_body_playground
 from .widget.register_resource import register_widget_resource
 from .widget.register_visualizer_resource import register_visualizer_resource
 from .widget.register_sandbox_resource import register_sandbox_resource
+from .widget.register_algo_resource import register_algo_resource
+from .widget.register_audio_resource import register_audio_resource
+from .widget.register_physics_playground_resource import register_physics_playground_resource
 
 
 def build_server() -> MCPServer:
@@ -31,9 +37,16 @@ def build_server() -> MCPServer:
     register_preview_html_css(server)
     register_run_code_scratchpad(server)
     register_get_student_analytics(server)
+    register_visualize_algorithm_3d(server)
+    register_interactive_audio_synth(server)
+    register_physics_rigid_body_playground(server)
+
     register_widget_resource(server)
     register_visualizer_resource(server)
     register_sandbox_resource(server)
+    register_algo_resource(server)
+    register_audio_resource(server)
+    register_physics_playground_resource(server)
 
     return server
 

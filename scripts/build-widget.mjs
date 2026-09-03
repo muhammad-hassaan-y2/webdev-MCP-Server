@@ -44,6 +44,21 @@ async function main() {
     "sandbox-template.html",
     "sandbox-widget.html"
   );
+  await bundleWidget(
+    "algo-widget-src.ts",
+    "algo-template.html",
+    "algo-widget.html"
+  );
+  await bundleWidget(
+    "audio-synth-widget-src.ts",
+    "audio-synth-template.html",
+    "audio-synth-widget.html"
+  );
+  await bundleWidget(
+    "physics-playground-widget-src.ts",
+    "physics-playground-template.html",
+    "physics-playground-widget.html"
+  );
 }
 
 main().catch((err) => {

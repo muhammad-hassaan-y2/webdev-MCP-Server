@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "^1.7.5",
+    "cannon-es": "^0.20.0",
     "three": "0.128.0"
   },
   "devDependencies": {
