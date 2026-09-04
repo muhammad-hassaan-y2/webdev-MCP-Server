@@ -3,12 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCP Lab & Generative UI Showcase Dashboard</title>
+  <title>Omni Tutor MCP • 3D Interactive STEM & Coding Studio</title>
+  
+  <!-- WebMCP Protocol Discovery Tags -->
+  <link rel="mcp-server" href="/mcp" />
+  <link rel="mcp" href="/mcp" />
+  <meta name="mcp-endpoint" content="https://mcp-tutor-py.vercel.app/mcp" />
+  <meta name="webmcp-enabled" content="true" />
+  <meta name="application-name" content="Omni Tutor MCP" />
+  <meta name="description" content="Multi-Sensory 3D Generative UI STEM & Coding Studio for Model Context Protocol" />
+
   <style>
     :root {
-      --bg: #070b14;
-      --card-bg: #0f172a;
-      --border: #1e293b;
+      --bg: #050810;
+      --card-bg: #0d1424;
+      --border: #1e2d4b;
       --accent: #38bdf8;
       --text: #f8fafc;
       --text-muted: #94a3b8;
@@ -19,23 +28,23 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 24px;
+      padding: 20px;
     }
     header {
       max-width: 1400px;
-      margin: 0 auto 24px;
+      margin: 0 auto 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
-      padding-bottom: 20px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--border);
     }
     .title-group h1 {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 800;
-      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #f43f5e);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -44,17 +53,25 @@
       color: var(--text-muted);
       margin-top: 4px;
     }
+    .badges-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
     .status-pill {
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #082f49;
-      border: 1px solid #0284c7;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid #22c55e;
       padding: 6px 14px;
       border-radius: 9999px;
       font-size: 12px;
-      color: #38bdf8;
-      font-weight: 600;
+      color: #34d399;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     .pulse-dot {
       width: 8px;
@@ -62,16 +79,62 @@
       background: #22c55e;
       border-radius: 50%;
       box-shadow: 0 0 10px #22c55e;
+      animation: pulse 2s infinite;
     }
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    .mcp-pill {
+      background: #0d1424;
+      border: 1px solid #38bdf8;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #38bdf8;
+      font-family: monospace;
+      font-weight: 600;
+    }
+
+    /* Endpoint Callout Banner */
+    .endpoint-banner {
+      max-width: 1400px;
+      margin: 0 auto 18px;
+      background: #0a0f1d;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .endpoint-banner span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .endpoint-banner code {
+      background: #030712;
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: #38bdf8;
+      font-family: monospace;
+      font-size: 13px;
+      border: 1px solid #1e293b;
+    }
+
+    /* Tab Navigation */
     .nav-tabs {
       max-width: 1400px;
-      margin: 0 auto 24px;
+      margin: 0 auto 18px;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
     .tab-btn {
-      padding: 10px 18px;
+      padding: 10px 16px;
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text-muted);
@@ -80,6 +143,9 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
     .tab-btn:hover {
       background: #1e293b;
@@ -91,6 +157,8 @@
       color: #ffffff;
       box-shadow: 0 0 15px rgba(2, 132, 199, 0.4);
     }
+
+    /* Panels Container */
     .grid-container {
       max-width: 1400px;
       margin: 0 auto;
@@ -101,51 +169,40 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
     }
     .widget-panel.active {
       display: block;
     }
-    .panel-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #0b1120;
-    }
-    .panel-header h2 {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--accent);
-    }
-    .panel-header p {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-    .iframe-wrapper {
+    .widget-panel iframe {
       width: 100%;
-      height: 520px;
-      position: relative;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
+      height: 720px;
       border: none;
       display: block;
     }
-    .feature-tags {
-      display: flex;
-      gap: 6px;
+
+    /* Client Config Box */
+    .config-box {
+      max-width: 1400px;
+      margin: 24px auto 0;
+      background: #0a0f1d;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 22px;
     }
-    .tag {
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      background: #1e293b;
-      color: #cbd5e1;
-      border: 1px solid #334155;
+    .config-box h3 {
+      font-size: 15px;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+    .config-box pre {
+      background: #030712;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #a5b4fc;
+      overflow-x: auto;
+      border: 1px solid #1e293b;
     }
   </style>
 </head>
@@ -153,320 +210,101 @@
 
   <header>
     <div class="title-group">
-      <h1>🚀 Generative UI & Interactive Lab Showcase</h1>
-      <p>13 MCP Tools • 6 Three.js / Web Audio / Cannon-es Widgets • Live MCP Server</p>
+      <h1>Omni Tutor MCP Studio</h1>
+      <p>Multi-Sensory 3D Generative UI STEM & Coding Studio for Model Context Protocol</p>
     </div>
-    <div class="status-pill">
-      <span class="pulse-dot"></span>
-      <span>Live Server Ready (Port 3000)</span>
+    <div class="badges-group">
+      <div class="status-pill">
+        <div class="pulse-dot"></div>
+        WebMCP Enabled • Live
+      </div>
+      <div class="mcp-pill">13 Tools • 6 UI Widgets</div>
     </div>
   </header>
 
+  <!-- Live Endpoint Announcement -->
+  <div class="endpoint-banner">
+    <div>
+      <span>🔌 <b>MCP Server Endpoint:</b></span>
+      <code>https://mcp-tutor-py.vercel.app/mcp</code>
+    </div>
+    <div style="font-size:12px; color:#94a3b8;">
+      Compatible with <b>Chrome WebMCP</b>, <b>ChatGPT In-App Browser</b>, and <b>Claude Desktop</b>
+    </div>
+  </div>
+
+  <!-- Interactive Studio Tabs -->
   <div class="nav-tabs">
-    <button class="tab-btn active" data-tab="physics" onclick="switchTab('physics', this)">💥 3D Physics Playground</button>
-    <button class="tab-btn" data-tab="audio" onclick="switchTab('audio', this)">🎛️ Audio Synthesizer</button>
-    <button class="tab-btn" data-tab="algo" onclick="switchTab('algo', this)">🧱 3D Algorithm Visualizer</button>
-    <button class="tab-btn" data-tab="space" onclick="switchTab('space', this)">🌌 3D Space Visualizer</button>
-    <button class="tab-btn" data-tab="sandbox" onclick="switchTab('sandbox', this)">🌐 Web Dev Sandbox</button>
-    <button class="tab-btn" data-tab="mission" onclick="switchTab('mission', this)">🎯 Physics Projectile Mission</button>
+    <button class="tab-btn active" onclick="switchTab('physics', this)">💥 3D Physics Playground</button>
+    <button class="tab-btn" onclick="switchTab('audio', this)">🎵 Web Audio Synth & Oscilloscope</button>
+    <button class="tab-btn" onclick="switchTab('algo', this)">🧱 3D Algorithm Visualizer</button>
+    <button class="tab-btn" onclick="switchTab('math', this)">📐 3D Math Topology</button>
+    <button class="tab-btn" onclick="switchTab('solar', this)">🪐 3D Solar System</button>
+    <button class="tab-btn" onclick="switchTab('sandbox', this)">💻 Live Web Sandbox</button>
+    <button class="tab-btn" onclick="switchTab('report', this)">📋 Verification Report Card</button>
   </div>
 
   <div class="grid-container">
-
-    <!-- 1. PHYSICS PLAYGROUND -->
-    <div class="widget-panel active" id="panel-physics">
-      <div class="panel-header">
-        <div>
-          <h2>Rigid-Body 3D Physics Simulator</h2>
-          <p>Powered by Cannon-es + Three.js • Click anywhere on the 3D scene to shoot high-velocity cannonballs!</p>
-        </div>
-        <div class="feature-tags">
-          <span class="tag">Cannon-es</span>
-          <span class="tag">60 FPS Collision</span>
-          <span class="tag">Real Gravity</span>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="frame-physics" src="widget-src/generated/physics-playground-widget.html"></iframe>
-      </div>
+    <!-- Tab 1: 3D Physics Playground -->
+    <div id="panel-physics" class="widget-panel active">
+      <iframe src="/render_physics_demo.html"></iframe>
     </div>
 
-    <!-- 2. AUDIO SYNTH -->
-    <div class="widget-panel" id="panel-audio">
-      <div class="panel-header">
-        <div>
-          <h2>Web Audio Frequency Synthesizer & Oscilloscope</h2>
-          <p>Real-time browser audio synthesis with glowing 60 FPS oscilloscope and playable piano keys.</p>
-        </div>
-        <div class="feature-tags">
-          <span class="tag">Web Audio API</span>
-          <span class="tag">Live Oscilloscope</span>
-          <span class="tag">Harmonics</span>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="frame-audio" src="widget-src/generated/audio-synth-widget.html"></iframe>
-      </div>
+    <!-- Tab 2: Web Audio Synthesizer -->
+    <div id="panel-audio" class="widget-panel">
+      <iframe src="/widget-src/generated/audio-synth-widget.html"></iframe>
     </div>
 
-    <!-- 3. ALGORITHM VISUALIZER -->
-    <div class="widget-panel" id="panel-algo">
-      <div class="panel-header">
-        <div>
-          <h2>3D Algorithm Step-by-Step Voxel Visualizer</h2>
-          <p>Animated sorting simulation with glowing comparison states, height interpolation, and playback controls.</p>
-        </div>
-        <div class="feature-tags">
-          <span class="tag">Three.js Voxels</span>
-          <span class="tag">Step Playback</span>
-          <span class="tag">Comparisons & Swaps</span>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="frame-algo" src="widget-src/generated/algo-widget.html"></iframe>
-      </div>
+    <!-- Tab 3: 3D Algorithm Visualizer -->
+    <div id="panel-algo" class="widget-panel">
+      <iframe src="/render_algo_demo.html"></iframe>
     </div>
 
-    <!-- 4. 3D SPACE VISUALIZER -->
-    <div class="widget-panel" id="panel-space">
-      <div class="panel-header">
-        <div>
-          <h2>3D Space & Molecular Scene Visualizer</h2>
-          <p>AI-generated 3D astrophysics models with orbiting satellites, planets, and hover labels.</p>
-        </div>
-        <div class="feature-tags">
-          <span class="tag">Gemini Powered</span>
-          <span class="tag">Orbit Controls</span>
-          <span class="tag">Planetary Orbits</span>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="frame-space" src="widget-src/generated/visualizer-widget.html"></iframe>
-      </div>
+    <!-- Tab 4: 3D Math Topology -->
+    <div id="panel-math" class="widget-panel">
+      <iframe src="/render_math_demo.html"></iframe>
     </div>
 
-    <!-- 5. WEB SANDBOX -->
-    <div class="widget-panel" id="panel-sandbox">
-      <div class="panel-header">
-        <div>
-          <h2>Live Web Development Sandbox</h2>
-          <p>Interactive HTML/CSS/JS preview with live code editing tabs and responsive device switching.</p>
-        </div>
-        <div class="feature-tags">
-          <span class="tag">Live Reload</span>
-          <span class="tag">Responsive View</span>
-          <span class="tag">Sandboxed</span>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="frame-sandbox" src="widget-src/generated/sandbox-widget.html"></iframe>
-      </div>
+    <!-- Tab 5: 3D Solar System -->
+    <div id="panel-solar" class="widget-panel">
+      <iframe src="/render_3d_demo.html"></iframe>
     </div>
 
-    <!-- 6. PHYSICS MISSION -->
-    <div class="widget-panel" id="panel-mission">
-      <div class="panel-header">
-        <div>
-          <h2>Physics Projectile Range Simulation Mission</h2>
-          <p>Interactive launchpad with trigonometry trajectory plotting and deterministic server-side grading.</p>
-        </div>
-        <div class="feature-tags">
-          <span class="tag">Kinematics</span>
-          <span class="tag">Parabolic Curve</span>
-          <span class="tag">Trust Boundary</span>
-        </div>
-      </div>
-      <div class="iframe-wrapper">
-        <iframe id="frame-mission" src="widget-src/generated/mission-widget.html"></iframe>
-      </div>
+    <!-- Tab 6: Live Web Sandbox -->
+    <div id="panel-sandbox" class="widget-panel">
+      <iframe src="/widget-src/generated/sandbox-widget.html"></iframe>
     </div>
 
+    <!-- Tab 7: Verification Report Card -->
+    <div id="panel-report" class="widget-panel">
+      <iframe src="/test_report.html"></iframe>
+    </div>
+  </div>
+
+  <!-- Claude Desktop Configuration Box -->
+  <div class="config-box">
+    <h3>⚙️ How Judges Connect This Server in Claude Desktop</h3>
+    <pre>{
+  "mcpServers": {
+    "omni-tutor": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp-tutor-py.vercel.app/mcp"]
+    }
+  }
+}</pre>
   </div>
 
   <script>
-    function switchTab(tabId, btnElement) {
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll('.widget-panel').forEach(panel => panel.classList.remove('active'));
-
-      if (btnElement) {
-        btnElement.classList.add('active');
-      } else {
-        const found = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-        if (found) found.classList.add('active');
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.widget-panel').forEach(p => p.classList.remove('active'));
+      
+      btn.classList.add('active');
+      const targetPanel = document.getElementById('panel-' + tabId);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
       }
-      const panel = document.getElementById('panel-' + tabId);
-      if (panel) panel.classList.add('active');
     }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialTab = urlParams.get('tab');
-    if (initialTab) {
-      switchTab(initialTab);
-    }
-
-    // Initialize mock sample data for widgets when loaded
-    window.addEventListener('load', () => {
-      // 1. Send Domino Chain to Physics Playground
-      setTimeout(() => {
-        const framePhysics = document.getElementById('frame-physics');
-        const objects = [];
-        for (let i = 0; i < 14; i++) {
-          objects.push({
-            type: 'box',
-            size: [0.4, 3.0, 1.4],
-            position: [-10 + i * 1.6, 1.5, 0.0],
-            rotation: [0, 0, i === 0 ? 0.2 : 0],
-            mass: 2.0,
-            color: i % 2 === 0 ? '#38bdf8' : '#f43f5e'
-          });
-        }
-        framePhysics.contentWindow?.postMessage({
-          jsonrpc: '2.0',
-          method: 'ui/toolResult',
-          params: {
-            structuredContent: {
-              physicsWorld: {
-                title: 'Toppling Domino Chain Reaction',
-                description: 'Click anywhere to shoot cannonballs and topple the chain!',
-                gravity: -9.82,
-                restitution: 0.4,
-                friction: 0.3,
-                objects: objects
-              }
-            }
-          }
-        }, '*');
-
-        // 2. Send Cyberpunk Lead to Audio Synth
-        const frameAudio = document.getElementById('frame-audio');
-        frameAudio.contentWindow?.postMessage({
-          jsonrpc: '2.0',
-          method: 'ui/toolResult',
-          params: {
-            structuredContent: {
-              synthConfig: {
-                title: 'Cyberpunk Synth Lead',
-                description: 'Aggressive sawtooth lead with real-time glowing oscilloscope.',
-                waveform: 'sawtooth',
-                baseFrequency: 220,
-                filterCutoff: 1800
-              }
-            }
-          }
-        }, '*');
-
-        // 3. Send Bubble Sort to Algo Visualizer
-        const frameAlgo = document.getElementById('frame-algo');
-        const initialArray = [28, 14, 42, 9, 31, 18, 5, 23];
-        const steps = [];
-        const arr = [...initialArray];
-        let comp = 0, swaps = 0;
-        steps.push({ array: [...arr], comparing: [], swapped: false, sorted: [], comparisons: 0, swaps: 0, description: 'Initial array state.' });
-        for (let i = 0; i < arr.length; i++) {
-          for (let j = 0; j < arr.length - i - 1; j++) {
-            comp++;
-            const isSwap = arr[j] > arr[j + 1];
-            if (isSwap) {
-              [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-              swaps++;
-            }
-            steps.push({
-              array: [...arr],
-              comparing: [j, j + 1],
-              swapped: isSwap,
-              sorted: [],
-              comparisons: comp,
-              swaps: swaps,
-              description: `Comparing index ${j} and ${j+1}: ${isSwap ? 'Swapped!' : 'In order.'}`
-            });
-          }
-        }
-        steps.push({ array: [...arr], comparing: [], swapped: false, sorted: [0,1,2,3,4,5,6,7], comparisons: comp, swaps: swaps, description: 'Array fully sorted!' });
-
-        frameAlgo.contentWindow?.postMessage({
-          jsonrpc: '2.0',
-          method: 'ui/toolResult',
-          params: {
-            structuredContent: {
-              algorithmTrace: {
-                algorithm: 'Bubble Sort',
-                totalSteps: steps.length,
-                steps: steps
-              }
-            }
-          }
-        }, '*');
-
-        // 4. Send Solar System to Space Visualizer
-        const frameSpace = document.getElementById('frame-space');
-        frameSpace.contentWindow?.postMessage({
-          jsonrpc: '2.0',
-          method: 'ui/toolResult',
-          params: {
-            structuredContent: {
-              scene: {
-                title: 'Solar System Planetary Simulation',
-                description: 'Interactive Three.js astrophysical model with orbiting celestial bodies.',
-                objects: [
-                  { type: 'sphere', position: [0,0,0], scale: [3,3,3], color: '#ffaa00', label: 'Sun', animation: { type: 'rotate', speed: 1.0, axis: 'y' } },
-                  { type: 'sphere', position: [6,0,0], scale: [0.8,0.8,0.8], color: '#38bdf8', label: 'Earth', animation: { type: 'orbit', speed: 1.2, orbitRadius: 7 } },
-                  { type: 'sphere', position: [10,0,0], scale: [0.7,0.7,0.7], color: '#ef4444', label: 'Mars', animation: { type: 'orbit', speed: 0.8, orbitRadius: 11 } },
-                  { type: 'sphere', position: [15,0,0], scale: [1.8,1.8,1.8], color: '#fbbf24', label: 'Jupiter', animation: { type: 'orbit', speed: 0.5, orbitRadius: 16 } },
-                ],
-                camera: { position: [15, 12, 22], lookAt: [0, 0, 0] },
-                lights: [
-                  { type: 'ambient', color: '#ffffff', intensity: 0.6 },
-                  { type: 'point', color: '#ffaa00', intensity: 1.5, position: [0,0,0] }
-                ],
-                backgroundColor: '#070b14'
-              }
-            }
-          }
-        }, '*');
-
-        // 5. Send Neon Card to Web Sandbox
-        const frameSandbox = document.getElementById('frame-sandbox');
-        frameSandbox.contentWindow?.postMessage({
-          jsonrpc: '2.0',
-          method: 'ui/toolResult',
-          params: {
-            structuredContent: {
-              sandbox: {
-                title: 'Cyberpunk Glassmorphism Card',
-                html: '<div class="glass-card"><h2>Cyberpunk UI</h2><p>Live interactive web dev sandbox rendered directly in chat.</p><button onclick="alert(\'Action Triggered!\')">Activate Matrix</button></div>',
-                css: '.glass-card { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 28px; color: #f8fafc; max-width: 360px; margin: 20px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; } .glass-card h2 { color: #38bdf8; margin-bottom: 8px; } button { background: linear-gradient(135deg, #0284c7, #818cf8); border: none; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 16px; } button:hover { opacity: 0.9; }',
-                javascript: 'console.log("Card mounted!");'
-              }
-            }
-          }
-        }, '*');
-
-        // 6. Send Projectile Range to Mission
-        const frameMission = document.getElementById('frame-mission');
-        frameMission.contentWindow?.postMessage({
-          jsonrpc: '2.0',
-          method: 'ui/toolResult',
-          params: {
-            structuredContent: {
-              mission: {
-                type: 'simulation',
-                id: 'projectile-range',
-                title: 'Predict the range: projectile motion',
-                concept: 'projectile motion & trigonometry in physics',
-                description: 'Drag the sliders to pick a launch angle and speed, watch the trajectory, then predict the distance.',
-                params: [
-                  { key: 'angle', label: 'Launch angle', min: 5, max: 85, step: 1, default: 45, unit: '°' },
-                  { key: 'velocity', label: 'Launch speed', min: 5, max: 40, step: 1, default: 20, unit: 'm/s' }
-                ],
-                targetLabel: 'Predicted range (meters)'
-              }
-            }
-          }
-        }, '*');
-
-      }, 600);
-    });
   </script>
-
 </body>
 </html>
