@@ -1,11 +1,8 @@
 import os
 import sys
 import json
-from starlette.applications import Starlette
+from starlette.requests import Request
 from starlette.responses import JSONResponse, HTMLResponse, Response
-from starlette.routing import Route
-from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
 
 # Ensure src directory is on sys.path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +18,7 @@ from tutor_mcp.server import build_server
 # Build the MCP server instance
 mcp_server = build_server()
 
-async def handle_home(request):
+async def handle_home(request: Request):
     tools = await mcp_server.list_tools()
     resources = await mcp_server.list_resources()
     
@@ -90,25 +87,33 @@ async def handle_home(request):
 </html>"""
     return HTMLResponse(html)
 
-async def handle_mcp(request):
+async def handle_mcp(request: Request):
     if request.method == "OPTIONS":
-        return Response(status_code=204)
+        return Response(
+            status_code=204,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "*",
+            }
+        )
         
     try:
         body = await request.json()
     except Exception:
         return JSONResponse(
             {"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": None},
-            status_code=400
+            status_code=400,
+            headers={"Access-Control-Allow-Origin": "*"}
         )
     
     req_id = body.get("id")
     method = body.get("method")
     params = body.get("params", {})
 
-    # Handle notifications (no response needed)
+    # Handle notifications
     if method == "notifications/initialized":
-        return Response(status_code=204)
+        return Response(status_code=204, headers={"Access-Control-Allow-Origin": "*"})
 
     if method == "initialize":
         result = {
@@ -145,7 +150,8 @@ async def handle_mcp(request):
         except Exception as e:
             return JSONResponse(
                 {"jsonrpc": "2.0", "error": {"code": -32603, "message": f"Tool execution failed: {str(e)}"}, "id": req_id},
-                status_code=500
+                status_code=500,
+                headers={"Access-Control-Allow-Origin": "*"}
             )
     elif method == "resources/list":
         resources = await mcp_server.list_resources()
@@ -167,29 +173,37 @@ async def handle_mcp(request):
         except Exception as e:
             return JSONResponse(
                 {"jsonrpc": "2.0", "error": {"code": -32603, "message": f"Resource read failed: {str(e)}"}, "id": req_id},
-                status_code=500
+                status_code=500,
+                headers={"Access-Control-Allow-Origin": "*"}
             )
     else:
         return JSONResponse(
             {"jsonrpc": "2.0", "error": {"code": -32601, "message": f"Method not found: {method}"}, "id": req_id},
-            status_code=404
+            status_code=404,
+            headers={"Access-Control-Allow-Origin": "*"}
         )
 
-    return JSONResponse({"jsonrpc": "2.0", "result": result, "id": req_id})
-
-routes = [
-    Route("/", handle_home, methods=["GET"]),
-    Route("/mcp", handle_mcp, methods=["POST", "OPTIONS"]),
-    Route("/", handle_mcp, methods=["POST", "OPTIONS"]),
-]
-
-middleware = [
-    Middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
+    return JSONResponse(
+        {"jsonrpc": "2.0", "result": result, "id": req_id},
+        headers={"Access-Control-Allow-Origin": "*"}
     )
-]
 
-app = Starlette(routes=routes, middleware=middleware)
+async def app(scope, receive, send):
+    """Universal ASGI handler for Vercel Serverless Function."""
+    if scope["type"] == "lifespan":
+        while True:
+            message = await receive()
+            if message["type"] == "lifespan.startup":
+                await send({"type": "lifespan.startup.complete"})
+            elif message["type"] == "lifespan.shutdown":
+                await send({"type": "lifespan.shutdown.complete"})
+                break
+        return
+
+    if scope["type"] == "http":
+        request = Request(scope, receive)
+        if request.method == "GET":
+            response = await handle_home(request)
+        else:
+            response = await handle_mcp(request)
+        await response(scope, receive, send)
