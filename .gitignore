@@ -1,6 +1,5 @@
 .venv/
 node_modules/
-widget-src/generated/
 .data/
 .env
 __pycache__/
