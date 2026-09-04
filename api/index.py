@@ -31,15 +31,15 @@ WEBMCP_HEADERS = {
 async def handle_get(request: Request):
     path_str = request.url.path.strip("/")
     
-    # Root or dashboard -> serve interactive WebMCP Studio
-    if not path_str or path_str in ("dashboard", "index.html"):
+    # Root, dashboard, or Vercel internal rewritten entrypoint -> serve interactive WebMCP Studio
+    if not path_str or path_str in ("dashboard", "index.html", "api/index.py", "api/index", "api"):
         dash_path = BASE_DIR / "test_dashboard.html"
         if dash_path.exists():
             return HTMLResponse(dash_path.read_text(encoding="utf-8"), headers=WEBMCP_HEADERS)
 
     # Check if a static demo or widget file is requested
     target_file = BASE_DIR / path_str
-    if target_file.exists() and target_file.is_file():
+    if target_file.exists() and target_file.is_file() and not path_str.endswith(".py"):
         mime, _ = mimetypes.guess_type(str(target_file))
         mime = mime or "text/html"
         try:
